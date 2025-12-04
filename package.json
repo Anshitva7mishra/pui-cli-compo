@@ -1,0 +1,13 @@
+{
+  "name": "react-compo-cli",
+  "version": "1.0.0",
+  "bin": {
+    "react-compo": "index.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "inquirer": "^9.2.7",
+    "simple-git": "^3.19.1",
+    "chalk": "^5.3.0"
+  }
+}
