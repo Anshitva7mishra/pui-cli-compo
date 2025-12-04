@@ -84,7 +84,17 @@ async function installComponent(url, targetDir, mode, component) {
   const tempDir = path.join(tempParent, `clone_${Date.now()}`);
   try {
     await cloneToTemp(url, tempDir);
-    const sourceDir = await pickSourceInClone(tempDir, component);
+    let sourceDir = await pickSourceInClone(tempDir, component);
+    const basename = path.basename(sourceDir);
+    if (basename !== component) {
+      const nested = path.join(sourceDir, component);
+      if (
+        (await fsExtra.pathExists(nested)) &&
+        (await fsExtra.stat(nested)).isDirectory()
+      ) {
+        sourceDir = nested;
+      }
+    }
     if (mode === "overwrite") {
       const removing = ora({
         text: `Removing existing folder ${targetDir}`,
