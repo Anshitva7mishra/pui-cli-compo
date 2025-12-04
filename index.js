@@ -7,12 +7,9 @@ import fs from "fs";
 
 console.log(chalk.blue("\n🚀 React Component Installer CLI\n"));
 
-// add all your components here
+// Add your actual GitHub component URLs
 const components = {
-  auth: "https://github.com/YOUR_USERNAME/auth-component.git",
-  navbar: "https://github.com/YOUR_USERNAME/navbar-component.git",
-  sidebar: "https://github.com/YOUR_USERNAME/sidebar-component.git",
-  hero: "https://github.com/YOUR_USERNAME/hero-component.git",
+  auth: "https://github.com/Anshitva7mishra/pookie-auth-cl1.git",
 };
 
 async function run() {
@@ -28,6 +25,11 @@ async function run() {
   const url = components[component];
   const targetDir = `./src/${component}`;
 
+  // Ensure src folder exists
+  if (!fs.existsSync("./src")) {
+    fs.mkdirSync("./src");
+  }
+
   if (fs.existsSync(targetDir)) {
     console.log(chalk.red(`❌ Folder already exists: ${targetDir}`));
     process.exit(1);
@@ -36,10 +38,17 @@ async function run() {
   console.log(chalk.yellow("📥 Downloading component..."));
 
   const git = simpleGit();
-  await git.clone(url, targetDir);
+
+  try {
+    await git.clone(url, targetDir);
+  } catch (err) {
+    console.log(chalk.red(`❌ Failed to clone ${component}: ${err.message}`));
+    process.exit(1);
+  }
 
   console.log(chalk.green(`\n✅ Installed: ${component}`));
   console.log(chalk.cyan(`📂 Saved to: src/${component}\n`));
+  console.log(chalk.magenta("🎉 Enjoy your new component!\n"));
 }
 
 run();

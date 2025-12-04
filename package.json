@@ -1,8 +1,8 @@
 {
-  "name": "react-compo-cli",
+  "name": "pui-create",
   "version": "1.0.0",
   "bin": {
-    "react-compo": "index.js"
+    "pui-create": "index.js"
   },
   "type": "module",
   "dependencies": {
