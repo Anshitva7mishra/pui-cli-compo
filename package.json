@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "pui-create": "./index.js"
+    "pui-create": "index.js"
   },
   "files": [
     "index.js"
