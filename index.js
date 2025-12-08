@@ -12,7 +12,7 @@ console.log(chalk.blue("\n🚀 React Component Installer CLI\n"));
 const components = {
   pookie_auth: "https://github.com/Anshitva7mishra/pookie-auth-cl1.git",
   grad_auth: "https://github.com/Sarthak-Saghal/auth-cl1.git",
-  sursuri_auth: "https://github.com/Sarthak-Saghal/auth-cl2.git"
+  purpleFlow_auth: "https://github.com/Sarthak-Saghal/auth-cl2.git"
 };
 
 
