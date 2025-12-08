@@ -1,6 +1,6 @@
 {
   "name": "pui-create",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "React Component Installer CLI — scaffold React components into your project from GitHub repos",
   "main": "index.js",
   "type": "module",
