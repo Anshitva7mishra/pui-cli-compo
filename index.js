@@ -10,7 +10,8 @@ import ora from "ora";
 console.log(chalk.blue("\n🚀 React Component Installer CLI\n"));
 
 const components = {
-  auth: "https://github.com/Anshitva7mishra/pookie-auth-cl1.git",
+  pookie_auth: "https://github.com/Anshitva7mishra/pookie-auth-cl1.git",
+  grad_auth: "https://github.com/Sarthak-Saghal/auth-cl1.git",
 };
 
 async function cloneToTemp(url, tempDir) {
