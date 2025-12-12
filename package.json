@@ -1,6 +1,6 @@
 {
   "name": "pui-create",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "PUI React Component Installer CLI — discover and install premium React UI components",
   "type": "module",
   "preferGlobal": true,
