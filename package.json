@@ -1,33 +1,43 @@
 {
   "name": "pui-create",
-  "version": "1.0.3",
-  "description": "React Component Installer CLI — scaffold React components into your project from GitHub repos",
-  "main": "index.js",
+  "version": "1.0.5",
+  "description": "PUI React Component Installer CLI — discover and install premium React UI components",
   "type": "module",
+  "preferGlobal": true,
   "bin": {
-    "pui-create": "index.js"
+    "pui-create": "./index.js"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "components.config.js"
   ],
   "scripts": {
-    "start": "node index.js",
-    "test": "node index.js"
+    "start": "node index.js"
   },
   "keywords": [
+    "pui",
+    "pui-create",
     "cli",
     "react",
-    "components",
+    "react-components",
+    "ui",
     "scaffold",
-    "pui"
+    "generator"
   ],
   "author": "Ansh",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/projectUI2k25/pui-create"
+  },
   "dependencies": {
     "chalk": "^5.6.2",
     "fs-extra": "^11.3.2",
     "inquirer": "^9.3.8",
     "ora": "^9.0.0",
     "simple-git": "^3.30.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
