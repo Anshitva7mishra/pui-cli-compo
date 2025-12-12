@@ -6,7 +6,6 @@ import fs from "fs";
 import fsExtra from "fs-extra";
 import path from "path";
 import ora from "ora";
-import { execSync } from "child_process";
 import components from "./components.config.js";
 
 console.log(
@@ -24,12 +23,6 @@ console.log(chalk.blue("\n🚀 React Component Installer CLI\n"));
 
 const cwd = process.cwd();
 const arg = process.argv[2];
-
-function detectPackageManager() {
-  if (fs.existsSync("pnpm-lock.yaml")) return "pnpm";
-  if (fs.existsSync("yarn.lock")) return "yarn";
-  return "npm";
-}
 
 async function cloneToTemp(url, tempDir) {
   const git = simpleGit();
@@ -77,7 +70,7 @@ async function pickSource(tempDir) {
   return tempDir;
 }
 
-async function safeCleanup(dir) {
+function safeCleanup(dir) {
   setTimeout(() => {
     fsExtra.remove(dir).catch(() => {});
   }, 300);
@@ -92,7 +85,10 @@ async function installComponent(repo, targetDir, mode) {
     await cloneToTemp(repo, tempDir);
     const sourceDir = await pickSource(tempDir);
 
-    if (mode === "overwrite") await fsExtra.remove(targetDir).catch(() => {});
+    if (mode === "overwrite") {
+      await fsExtra.remove(targetDir).catch(() => {});
+    }
+
     await fsExtra.ensureDir(targetDir);
 
     await fsExtra.copy(sourceDir, targetDir, {
@@ -114,35 +110,10 @@ async function installComponent(repo, targetDir, mode) {
   }
 }
 
-function installDependencies(targetDir) {
-  const pkg = path.join(targetDir, "package.json");
-  if (!fs.existsSync(pkg)) return;
-
-  const json = JSON.parse(fs.readFileSync(pkg, "utf8"));
-  const deps = { ...json.dependencies, ...json.peerDependencies };
-  if (!deps || Object.keys(deps).length === 0) return;
-
-  const list = Object.entries(deps).map(([k, v]) => `${k}@${v}`);
-  const manager = detectPackageManager();
-  const spinner = ora("Installing dependencies...").start();
-
-  try {
-    const cmd =
-      manager === "pnpm"
-        ? `pnpm add ${list.join(" ")}`
-        : manager === "yarn"
-        ? `yarn add ${list.join(" ")}`
-        : `npm install ${list.join(" ")}`;
-    execSync(cmd, { stdio: "inherit" });
-    spinner.succeed("Dependencies installed");
-  } catch {
-    spinner.fail("Dependency installation failed");
-  }
-}
-
 function addCreditFile(targetDir) {
   const file = path.join(targetDir, "README.PUI.md");
   if (fs.existsSync(file)) return;
+
   fs.writeFileSync(
     file,
     `✨ Installed via ProjectUI (PUI)
@@ -165,7 +136,6 @@ async function installFlow(key, repo) {
   const spinner = ora("Installing component...").start();
   try {
     await installComponent(repo, targetDir, action);
-    installDependencies(targetDir);
     addCreditFile(targetDir);
     spinner.succeed("Installation complete");
     console.log(chalk.green(`\n✅ Installed: ${key}`));
