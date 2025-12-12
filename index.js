@@ -77,6 +77,12 @@ async function pickSource(tempDir) {
   return tempDir;
 }
 
+async function safeCleanup(dir) {
+  setTimeout(() => {
+    fsExtra.remove(dir).catch(() => {});
+  }, 300);
+}
+
 async function installComponent(repo, targetDir, mode) {
   const tempRoot = path.join(cwd, ".pui_tmp");
   const tempDir = path.join(tempRoot, `clone_${Date.now()}`);
@@ -86,7 +92,7 @@ async function installComponent(repo, targetDir, mode) {
     await cloneToTemp(repo, tempDir);
     const sourceDir = await pickSource(tempDir);
 
-    if (mode === "overwrite") await fsExtra.remove(targetDir);
+    if (mode === "overwrite") await fsExtra.remove(targetDir).catch(() => {});
     await fsExtra.ensureDir(targetDir);
 
     await fsExtra.copy(sourceDir, targetDir, {
@@ -96,12 +102,14 @@ async function installComponent(repo, targetDir, mode) {
 
     const gitDir = path.join(targetDir, ".git");
     if (await fsExtra.pathExists(gitDir)) {
-      await fsExtra.remove(gitDir);
+      await fsExtra.remove(gitDir).catch(() => {});
     }
 
-    await fsExtra.remove(tempDir);
+    safeCleanup(tempDir);
+    safeCleanup(tempRoot);
   } catch (e) {
-    await fsExtra.remove(tempDir).catch(() => {});
+    safeCleanup(tempDir);
+    safeCleanup(tempRoot);
     throw e;
   }
 }
