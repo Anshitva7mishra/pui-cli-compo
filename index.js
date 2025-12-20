@@ -8,6 +8,7 @@ import fsExtra from "fs-extra";
 import path from "path";
 import os from "os";
 import ora from "ora";
+import boxen from "boxen";
 import components from "./components.config.js";
 
 const welcome = `
@@ -37,7 +38,6 @@ async function cloneToTemp(url, tempDir) {
     text: chalk.cyan("Connecting to remote registry..."),
     spinner: "dots12",
   }).start();
-
   try {
     await git.clone(url, tempDir, ["--depth", "1"]);
     spinner.succeed(chalk.green("Assets synchronized successfully"));
@@ -56,13 +56,11 @@ async function ensureTarget(key) {
 async function promptIfExists(targetDir) {
   if (!fs.existsSync(targetDir) || fs.readdirSync(targetDir).length === 0)
     return "create";
-
   console.log(
     `\n ${chalk.bgRed.white.bold(" CONFLICT ")} ${chalk.red(
       `The directory ${path.basename(targetDir)} already exists.`
     )}`
   );
-
   const { action } = await inquirer.prompt([
     {
       type: "list",
@@ -108,14 +106,10 @@ async function installComponent(repo, targetDir, mode) {
     await cloneToTemp(repo, tempDir);
     const sourceDir = await pickSource(tempDir);
     const deps = await extractDependencies(sourceDir);
-
     if (mode === "overwrite") await fsExtra.emptyDir(targetDir);
-
     await fsExtra.copy(sourceDir, targetDir, { overwrite: mode !== "merge" });
-
     const gitDir = path.join(targetDir, ".git");
     if (await fsExtra.pathExists(gitDir)) await fsExtra.remove(gitDir);
-
     setTimeout(() => fsExtra.remove(tempDir).catch(() => {}), 500);
     return deps;
   } catch (e) {
@@ -127,94 +121,44 @@ async function installComponent(repo, targetDir, mode) {
 async function installFlow(key, repo) {
   const targetDir = await ensureTarget(key);
   const action = await promptIfExists(targetDir);
-
   if (action === "cancel") {
     console.log(chalk.gray("\nProcess terminated by user."));
     process.exit(0);
   }
-
   const spinner = ora({
     text: chalk.magenta(`Injecting ${chalk.bold(key)}...`),
     spinner: "binary",
   }).start();
-
   try {
     const dependencies = await installComponent(repo, targetDir, action);
     spinner.stop();
-
     const rainbow = chalkAnimation.rainbow(
-      `\n   ✔ ${key.toUpperCase()} READY FOR DEPLOYMENT`
+      `✔ ${key.toUpperCase()} READY FOR DEPLOYMENT`
     );
-
     setTimeout(() => {
       rainbow.stop();
-      console.log(
-        `   ${chalk.white(
-          "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-        )}`
-      );
-      console.log(
-        `   ${chalk.white("┃")} ${chalk.bold.green("SUCCESS")} • ${chalk.white(
-          "Saved to path:"
-        )}                      ${chalk.white("┃")}`
-      );
-      console.log(
-        `   ${chalk.white("┃")} ${chalk.cyan(
-          `./src/components/${key}Components`
-        )}      ${chalk.white("┃")}`
-      );
-
+      let content = `${chalk.bold.green("SUCCESS")} • ${chalk.white(
+        "Saved to path:"
+      )}\n`;
+      content += `${chalk.cyan(`./src/components/${key}Components`)}\n`;
       if (dependencies) {
-        console.log(
-          `   ${chalk.white(
-            "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
-          )}`
-        );
-        console.log(
-          `   ${chalk.white("┃")} ${chalk.bold.yellow(
-            "REQUIRED DEPENDENCIES:"
-          )}                         ${chalk.white("┃")}`
-        );
-        const lines = dependencies.split("\n").filter((l) => l.trim() !== "");
-        lines.forEach((line) => {
-          console.log(
-            `   ${chalk.white("┃")} ${chalk.dim(
-              line.substring(0, 48).padEnd(48)
-            )}  ${chalk.white("┃")}`
-          );
-        });
+        content += `\n${chalk.bold.yellow(
+          "REQUIRED DEPENDENCIES:"
+        )}\n${chalk.dim(dependencies)}\n`;
       }
-
+      content += `\n${chalk.bold.magenta("NEXT STEPS:")}\n`;
+      content += `${chalk.white("1. Check & install dependencies above")}\n`;
+      content += `${chalk.white("2. Import component into your project")}`;
       console.log(
-        `   ${chalk.white(
-          "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
-        )}`
+        boxen(content, {
+          padding: 1,
+          margin: { top: 1, bottom: 1, left: 2 },
+          borderStyle: "round",
+          borderColor: "cyan",
+          dimBorder: true,
+        })
       );
-      console.log(
-        `   ${chalk.white("┃")} ${chalk.bold.magenta(
-          "NEXT STEPS:"
-        )}                                      ${chalk.white("┃")}`
-      );
-      console.log(
-        `   ${chalk.white(
-          "┃"
-        )} 1. Check & install dependencies above              ${chalk.white(
-          "┃"
-        )}`
-      );
-      console.log(
-        `   ${chalk.white(
-          "┃"
-        )} 2. Import component into your project               ${chalk.white(
-          "┃"
-        )}`
-      );
-      console.log(
-        `   ${chalk.white(
-          "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
-        )}\n`
-      );
-    }, 1500);
+    }, 1200);
   } catch (e) {
     spinner.fail(chalk.red("Deployment failed unexpectedly"));
     process.exit(1);
@@ -236,7 +180,6 @@ async function run() {
     ]);
     arg = category;
   }
-
   if (components[arg]) {
     const { component } = await inquirer.prompt([
       {
@@ -251,7 +194,6 @@ async function run() {
     ]);
     arg = component;
   }
-
   let found;
   for (const c of Object.values(components)) {
     if (c.items[arg]) {
@@ -259,12 +201,10 @@ async function run() {
       break;
     }
   }
-
   if (!found) {
     console.log(chalk.red(`\n ✘ Unknown component ID: "${arg}"`));
     process.exit(1);
   }
-
   await installFlow(arg, found.repo);
 }
 
