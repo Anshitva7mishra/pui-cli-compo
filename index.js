@@ -1,58 +1,88 @@
 #!/usr/bin/env node
 import inquirer from "inquirer";
 import chalk from "chalk";
+import chalkAnimation from "chalk-animation";
 import simpleGit from "simple-git";
 import fs from "fs";
 import fsExtra from "fs-extra";
 import path from "path";
+import os from "os";
 import ora from "ora";
 import components from "./components.config.js";
 
+// --- THE SEXIER HEADER ---
 console.log(
-  chalk.cyanBright(`
-╔══════════════════════════════════════════╗
-║   ✨ Powered by ProjectUI (PUI)          ║
-║   🎨 Premium React UI Components        ║
-║   🌐 https://projectui.in                ║
-║   ⭐ Star us on GitHub                   ║
-╚══════════════════════════════════════════╝
+  chalk.bold.cyan(`
+  ${chalk.magenta("⭐")} ${chalk.white("Thank you for using ProjectUI!")}
+  ${chalk.gray("──────────────────────────────────────────────────")}
+  
+   ${chalk.bgCyan.black("  PROJECT UI (PUI)  ")}  ${chalk.cyan(
+    "Premium React Components"
+  )}
+  
+   ${chalk.blue("🌐 Website:")}   ${chalk.underline.white(
+    "https://projectui.in"
+  )}
+   ${chalk.yellow("✨ Status:")}    ${chalk.green("Ready to install")}
+   ${chalk.magenta("💖 Community:")} ${chalk.italic.white(
+    "If you like it, star us on GitHub!"
+  )}
+   ${chalk.white("👉 Repo:")}      ${chalk.underline.blue(
+    "https://github.com/projectUI2k25"
+  )}
+
+  ${chalk.gray("──────────────────────────────────────────────────")}
 `)
 );
 
-console.log(chalk.blue("\n🚀 React Component Installer CLI\n"));
-
 const cwd = process.cwd();
-const arg = process.argv[2];
+let arg = process.argv[2];
+const tempRoot = path.join(os.tmpdir(), "pui-create");
 
 async function cloneToTemp(url, tempDir) {
   const git = simpleGit();
-  const spinner = ora("Cloning repository...").start();
+  // Using a custom spinner frame for a "smoother" look
+  const spinner = ora({
+    text: chalk.blue("Fetching component from source..."),
+    spinner: "dots12",
+    color: "cyan",
+  }).start();
+
   try {
     await git.clone(url, tempDir, ["--depth", "1"]);
-    spinner.succeed("Repository cloned");
+    spinner.succeed(chalk.green("Source synchronized successfully"));
   } catch (e) {
-    spinner.fail("Failed to clone repository");
+    spinner.fail(chalk.red("Failed to reach repository"));
     throw e;
   }
 }
 
 async function ensureTarget(key) {
-  const target = path.join(cwd, "src", "components", `${key}Components`);
-  await fsExtra.ensureDir(path.dirname(target));
-  return target;
+  // Logic to ensure src -> components -> Folder
+  const targetPath = path.join(cwd, "src", "components", `${key}Components`);
+  await fsExtra.ensureDir(targetPath);
+  return targetPath;
 }
 
 async function promptIfExists(targetDir) {
-  if (!fs.existsSync(targetDir)) return "create";
+  if (!fs.existsSync(targetDir) || fs.readdirSync(targetDir).length === 0)
+    return "create";
+
+  console.log(
+    chalk.bold.yellow(
+      `\n⚠️  Conflict Detected: ${path.basename(targetDir)} already exists.`
+    )
+  );
+
   const { action } = await inquirer.prompt([
     {
       type: "list",
       name: "action",
-      message: "Component already exists:",
+      message: "How should we proceed?",
       choices: [
-        { name: "Overwrite", value: "overwrite" },
-        { name: "Merge", value: "merge" },
-        { name: "Cancel", value: "cancel" },
+        { name: chalk.red("Overwrite (Delete existing)"), value: "overwrite" },
+        { name: chalk.blue("Merge (Keep existing files)"), value: "merge" },
+        { name: chalk.gray("Cancel Installation"), value: "cancel" },
       ],
     },
   ]);
@@ -70,79 +100,68 @@ async function pickSource(tempDir) {
   return tempDir;
 }
 
-function safeCleanup(dir) {
-  setTimeout(() => {
-    fsExtra.remove(dir).catch(() => {});
-  }, 300);
-}
-
 async function installComponent(repo, targetDir, mode) {
-  const tempRoot = path.join(cwd, ".pui_tmp");
   const tempDir = path.join(tempRoot, `clone_${Date.now()}`);
   await fsExtra.ensureDir(tempRoot);
-
   try {
     await cloneToTemp(repo, tempDir);
     const sourceDir = await pickSource(tempDir);
 
-    if (mode === "overwrite") {
-      await fsExtra.remove(targetDir).catch(() => {});
-    }
+    if (mode === "overwrite") await fsExtra.emptyDir(targetDir);
 
-    await fsExtra.ensureDir(targetDir);
+    await fsExtra.copy(sourceDir, targetDir, { overwrite: mode !== "merge" });
 
-    await fsExtra.copy(sourceDir, targetDir, {
-      overwrite: mode !== "merge",
-      errorOnExist: false,
-    });
-
+    // Cleanup internal git data
     const gitDir = path.join(targetDir, ".git");
-    if (await fsExtra.pathExists(gitDir)) {
-      await fsExtra.remove(gitDir).catch(() => {});
-    }
+    if (await fsExtra.pathExists(gitDir)) await fsExtra.remove(gitDir);
 
-    safeCleanup(tempDir);
-    safeCleanup(tempRoot);
+    setTimeout(() => fsExtra.remove(tempDir).catch(() => {}), 500);
   } catch (e) {
-    safeCleanup(tempDir);
-    safeCleanup(tempRoot);
+    setTimeout(() => fsExtra.remove(tempDir).catch(() => {}), 500);
     throw e;
   }
-}
-
-function addCreditFile(targetDir) {
-  const file = path.join(targetDir, "README.PUI.md");
-  if (fs.existsSync(file)) return;
-
-  fs.writeFileSync(
-    file,
-    `✨ Installed via ProjectUI (PUI)
-
-Premium React UI components with modern design & motion.
-
-🌐 https://projectui.in
-⭐ https://github.com/projectUI2k25
-
-If this component helped you, consider starring the repo ❤️
-`
-  );
 }
 
 async function installFlow(key, repo) {
   const targetDir = await ensureTarget(key);
   const action = await promptIfExists(targetDir);
-  if (action === "cancel") process.exit(0);
 
-  const spinner = ora("Installing component...").start();
+  if (action === "cancel") {
+    console.log(chalk.gray("\nOperation aborted by user."));
+    process.exit(0);
+  }
+
+  const spinner = ora({
+    text: chalk.magenta(`Building ${key}...`),
+    spinner: "moon",
+  }).start();
+
   try {
     await installComponent(repo, targetDir, action);
-    addCreditFile(targetDir);
-    spinner.succeed("Installation complete");
-    console.log(chalk.green(`\n✅ Installed: ${key}`));
-    console.log(chalk.cyan(`📂 src/components/${key}Components\n`));
+    spinner.stop();
+
+    // Sexier Success Message with Animation
+    const rainbow = chalkAnimation.rainbow(`\n✅ ${key} is ready to use!`);
+    setTimeout(() => {
+      rainbow.stop(); // Stop animation after 2 seconds
+      console.log(
+        chalk.gray("──────────────────────────────────────────────────")
+      );
+      console.log(
+        `${chalk.bold("📍 Location:")} ${chalk.cyan(
+          `src/components/${key}Components`
+        )}`
+      );
+      console.log(
+        `${chalk.bold("🚀 Next step:")} Import the component into your project.`
+      );
+      console.log(
+        chalk.gray("──────────────────────────────────────────────────\n")
+      );
+    }, 2000);
   } catch (e) {
-    spinner.fail("Installation failed");
-    console.log(chalk.red(e.message));
+    spinner.fail(chalk.red("Installation failed unexpectedly"));
+    console.error(e);
     process.exit(1);
   }
 }
@@ -153,34 +172,29 @@ async function run() {
       {
         type: "list",
         name: "category",
-        message: "Select a component category:",
+        message: chalk.cyan("What are you building today?"),
         choices: Object.entries(components).map(([k, v]) => ({
           name: v.label,
           value: k,
         })),
       },
     ]);
-
-    console.log(chalk.cyan(`\nNext step:\n👉 pui-create ${category}\n`));
-    process.exit(0);
+    arg = category;
   }
 
   if (components[arg]) {
-    const cat = components[arg];
     const { component } = await inquirer.prompt([
       {
         type: "list",
         name: "component",
-        message: `Select a ${cat.label} component:`,
-        choices: Object.entries(cat.items).map(([k, v]) => ({
-          name: `${v.name} — ${v.description}`,
+        message: `Pick your ${chalk.bold.blue(components[arg].label)}:`,
+        choices: Object.entries(components[arg].items).map(([k, v]) => ({
+          name: `${chalk.white(v.name)} ${chalk.dim(`— ${v.description}`)}`,
           value: k,
         })),
       },
     ]);
-
-    console.log(chalk.cyan(`\nNext step:\n👉 pui-create ${component}\n`));
-    process.exit(0);
+    arg = component;
   }
 
   let found;
@@ -192,7 +206,7 @@ async function run() {
   }
 
   if (!found) {
-    console.log(chalk.red(`❌ Unknown component "${arg}"`));
+    console.log(chalk.red(`\n❌ Error: Could not find component "${arg}"`));
     process.exit(1);
   }
 
