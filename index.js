@@ -132,11 +132,17 @@ async function installFlow(key, repo) {
   try {
     const dependencies = await installComponent(repo, targetDir, action);
     spinner.stop();
+
     const rainbow = chalkAnimation.rainbow(
       `✔ ${key.toUpperCase()} READY FOR DEPLOYMENT`
     );
+
     setTimeout(() => {
+      rainbow.replace("");
       rainbow.stop();
+
+      process.stdout.write("\n");
+
       let content = `${chalk.bold.green("SUCCESS")} • ${chalk.white(
         "Saved to path:"
       )}\n`;
@@ -149,10 +155,11 @@ async function installFlow(key, repo) {
       content += `\n${chalk.bold.magenta("NEXT STEPS:")}\n`;
       content += `${chalk.white("1. Check & install dependencies above")}\n`;
       content += `${chalk.white("2. Import component into your project")}`;
+
       console.log(
         boxen(content, {
           padding: 1,
-          margin: { top: 1, bottom: 1, left: 2 },
+          margin: { left: 2 },
           borderStyle: "round",
           borderColor: "cyan",
           dimBorder: true,
