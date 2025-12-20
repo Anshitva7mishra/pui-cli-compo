@@ -10,30 +10,22 @@ import os from "os";
 import ora from "ora";
 import components from "./components.config.js";
 
-// --- THE SEXIER HEADER ---
-console.log(
-  chalk.bold.cyan(`
-  ${chalk.magenta("⭐")} ${chalk.white("Thank you for using ProjectUI!")}
-  ${chalk.gray("──────────────────────────────────────────────────")}
-  
-   ${chalk.bgCyan.black("  PROJECT UI (PUI)  ")}  ${chalk.cyan(
-    "Premium React Components"
-  )}
-  
-   ${chalk.blue("🌐 Website:")}   ${chalk.underline.white(
-    "https://projectui.in"
-  )}
-   ${chalk.yellow("✨ Status:")}    ${chalk.green("Ready to install")}
-   ${chalk.magenta("💖 Community:")} ${chalk.italic.white(
-    "If you like it, star us on GitHub!"
-  )}
-   ${chalk.white("👉 Repo:")}      ${chalk.underline.blue(
-    "https://github.com/projectUI2k25"
-  )}
+const welcome = `
+   ${chalk.bgCyan.black.bold("  PROJECT UI  ")} ${chalk.cyan(
+  "— Premium React Ecosystem"
+)}
+   ${chalk.gray("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")}
+   ${chalk.white("⚡ Framework  • ")} ${chalk.blue("React + Tailwind")}
+   ${chalk.white("🌐 Website    • ")} ${chalk.underline.blue(
+  "https://projectui.in"
+)}
+   ${chalk.white("⭐ Community  • ")} ${chalk.italic.yellow(
+  "Star us on GitHub if you like this!"
+)}
+   ${chalk.gray("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")}
+`;
 
-  ${chalk.gray("──────────────────────────────────────────────────")}
-`)
-);
+console.log(welcome);
 
 const cwd = process.cwd();
 let arg = process.argv[2];
@@ -41,24 +33,21 @@ const tempRoot = path.join(os.tmpdir(), "pui-create");
 
 async function cloneToTemp(url, tempDir) {
   const git = simpleGit();
-  // Using a custom spinner frame for a "smoother" look
   const spinner = ora({
-    text: chalk.blue("Fetching component from source..."),
+    text: chalk.cyan("Connecting to remote registry..."),
     spinner: "dots12",
-    color: "cyan",
   }).start();
 
   try {
     await git.clone(url, tempDir, ["--depth", "1"]);
-    spinner.succeed(chalk.green("Source synchronized successfully"));
+    spinner.succeed(chalk.green("Assets synchronized successfully"));
   } catch (e) {
-    spinner.fail(chalk.red("Failed to reach repository"));
+    spinner.fail(chalk.red("Registry connection failed"));
     throw e;
   }
 }
 
 async function ensureTarget(key) {
-  // Logic to ensure src -> components -> Folder
   const targetPath = path.join(cwd, "src", "components", `${key}Components`);
   await fsExtra.ensureDir(targetPath);
   return targetPath;
@@ -69,24 +58,36 @@ async function promptIfExists(targetDir) {
     return "create";
 
   console.log(
-    chalk.bold.yellow(
-      `\n⚠️  Conflict Detected: ${path.basename(targetDir)} already exists.`
-    )
+    `\n ${chalk.bgRed.white.bold(" CONFLICT ")} ${chalk.red(
+      `The directory ${path.basename(targetDir)} already exists.`
+    )}`
   );
 
   const { action } = await inquirer.prompt([
     {
       type: "list",
       name: "action",
-      message: "How should we proceed?",
+      message: "How should we resolve this?",
       choices: [
-        { name: chalk.red("Overwrite (Delete existing)"), value: "overwrite" },
-        { name: chalk.blue("Merge (Keep existing files)"), value: "merge" },
-        { name: chalk.gray("Cancel Installation"), value: "cancel" },
+        { name: chalk.yellow("Overwrite (Clean install)"), value: "overwrite" },
+        { name: chalk.blue("Merge (Keep current files)"), value: "merge" },
+        { name: chalk.gray("Cancel"), value: "cancel" },
       ],
     },
   ]);
   return action;
+}
+
+async function extractDependencies(sourceDir) {
+  const readmePath = path.join(sourceDir, "README.md");
+  if (fs.existsSync(readmePath)) {
+    const content = fs.readFileSync(readmePath, "utf-8");
+    const depMatch = content.match(
+      /##\s*(?:Dependencies|Required Packages|Installation)([\s\S]*?)(?=##|$)/i
+    );
+    return depMatch ? depMatch[1].trim() : null;
+  }
+  return null;
 }
 
 async function pickSource(tempDir) {
@@ -106,16 +107,17 @@ async function installComponent(repo, targetDir, mode) {
   try {
     await cloneToTemp(repo, tempDir);
     const sourceDir = await pickSource(tempDir);
+    const deps = await extractDependencies(sourceDir);
 
     if (mode === "overwrite") await fsExtra.emptyDir(targetDir);
 
     await fsExtra.copy(sourceDir, targetDir, { overwrite: mode !== "merge" });
 
-    // Cleanup internal git data
     const gitDir = path.join(targetDir, ".git");
     if (await fsExtra.pathExists(gitDir)) await fsExtra.remove(gitDir);
 
     setTimeout(() => fsExtra.remove(tempDir).catch(() => {}), 500);
+    return deps;
   } catch (e) {
     setTimeout(() => fsExtra.remove(tempDir).catch(() => {}), 500);
     throw e;
@@ -127,41 +129,94 @@ async function installFlow(key, repo) {
   const action = await promptIfExists(targetDir);
 
   if (action === "cancel") {
-    console.log(chalk.gray("\nOperation aborted by user."));
+    console.log(chalk.gray("\nProcess terminated by user."));
     process.exit(0);
   }
 
   const spinner = ora({
-    text: chalk.magenta(`Building ${key}...`),
-    spinner: "moon",
+    text: chalk.magenta(`Injecting ${chalk.bold(key)}...`),
+    spinner: "binary",
   }).start();
 
   try {
-    await installComponent(repo, targetDir, action);
+    const dependencies = await installComponent(repo, targetDir, action);
     spinner.stop();
 
-    // Sexier Success Message with Animation
-    const rainbow = chalkAnimation.rainbow(`\n✅ ${key} is ready to use!`);
+    const rainbow = chalkAnimation.rainbow(
+      `\n   ✔ ${key.toUpperCase()} READY FOR DEPLOYMENT`
+    );
+
     setTimeout(() => {
-      rainbow.stop(); // Stop animation after 2 seconds
+      rainbow.stop();
       console.log(
-        chalk.gray("──────────────────────────────────────────────────")
-      );
-      console.log(
-        `${chalk.bold("📍 Location:")} ${chalk.cyan(
-          `src/components/${key}Components`
+        `   ${chalk.white(
+          "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
         )}`
       );
       console.log(
-        `${chalk.bold("🚀 Next step:")} Import the component into your project.`
+        `   ${chalk.white("┃")} ${chalk.bold.green("SUCCESS")} • ${chalk.white(
+          "Saved to path:"
+        )}                      ${chalk.white("┃")}`
       );
       console.log(
-        chalk.gray("──────────────────────────────────────────────────\n")
+        `   ${chalk.white("┃")} ${chalk.cyan(
+          `./src/components/${key}Components`
+        )}      ${chalk.white("┃")}`
       );
-    }, 2000);
+
+      if (dependencies) {
+        console.log(
+          `   ${chalk.white(
+            "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+          )}`
+        );
+        console.log(
+          `   ${chalk.white("┃")} ${chalk.bold.yellow(
+            "REQUIRED DEPENDENCIES:"
+          )}                         ${chalk.white("┃")}`
+        );
+        const lines = dependencies.split("\n").filter((l) => l.trim() !== "");
+        lines.forEach((line) => {
+          console.log(
+            `   ${chalk.white("┃")} ${chalk.dim(
+              line.substring(0, 48).padEnd(48)
+            )}  ${chalk.white("┃")}`
+          );
+        });
+      }
+
+      console.log(
+        `   ${chalk.white(
+          "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+        )}`
+      );
+      console.log(
+        `   ${chalk.white("┃")} ${chalk.bold.magenta(
+          "NEXT STEPS:"
+        )}                                      ${chalk.white("┃")}`
+      );
+      console.log(
+        `   ${chalk.white(
+          "┃"
+        )} 1. Check & install dependencies above              ${chalk.white(
+          "┃"
+        )}`
+      );
+      console.log(
+        `   ${chalk.white(
+          "┃"
+        )} 2. Import component into your project               ${chalk.white(
+          "┃"
+        )}`
+      );
+      console.log(
+        `   ${chalk.white(
+          "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+        )}\n`
+      );
+    }, 1500);
   } catch (e) {
-    spinner.fail(chalk.red("Installation failed unexpectedly"));
-    console.error(e);
+    spinner.fail(chalk.red("Deployment failed unexpectedly"));
     process.exit(1);
   }
 }
@@ -172,7 +227,7 @@ async function run() {
       {
         type: "list",
         name: "category",
-        message: chalk.cyan("What are you building today?"),
+        message: chalk.white("Choose a blueprint category:"),
         choices: Object.entries(components).map(([k, v]) => ({
           name: v.label,
           value: k,
@@ -187,7 +242,7 @@ async function run() {
       {
         type: "list",
         name: "component",
-        message: `Pick your ${chalk.bold.blue(components[arg].label)}:`,
+        message: `Select a ${chalk.bold.cyan(components[arg].label)} variant:`,
         choices: Object.entries(components[arg].items).map(([k, v]) => ({
           name: `${chalk.white(v.name)} ${chalk.dim(`— ${v.description}`)}`,
           value: k,
@@ -206,7 +261,7 @@ async function run() {
   }
 
   if (!found) {
-    console.log(chalk.red(`\n❌ Error: Could not find component "${arg}"`));
+    console.log(chalk.red(`\n ✘ Unknown component ID: "${arg}"`));
     process.exit(1);
   }
 

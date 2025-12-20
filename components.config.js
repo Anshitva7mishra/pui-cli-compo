@@ -1,24 +1,12 @@
 const components = {
-  navbar: {
-    label: "Navbar",
+  form: {
+    label: "Form",
     items: {
-      glass_navbar: {
-        key: "glass_navbar",
-        name: "Glass Navbar",
-        repo: "https://github.com/projectUI2k25/glass-navbar.git",
-        description: "Glassmorphism animated navbar",
-      },
-    },
-  },
-
-  sidebar: {
-    label: "Sidebar",
-    items: {
-      minimal_sidebar: {
-        key: "minimal_sidebar",
-        name: "Minimal Sidebar",
-        repo: "https://github.com/projectUI2k25/minimal-sidebar.git",
-        description: "Clean minimal sidebar",
+      appointment_Form: {
+        key: "appointment_Form",
+        name: "Appointment Form",
+        repo: "https://github.com/Anshitva7mishra/Appointment_Form_PUI_CLI.git",
+        description: "Modern Dark-Themed PUI Appointment Form",
       },
     },
   },
