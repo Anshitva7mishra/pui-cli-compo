@@ -76,18 +76,6 @@ async function promptIfExists(targetDir) {
   return action;
 }
 
-async function extractDependencies(sourceDir) {
-  const readmePath = path.join(sourceDir, "README.md");
-  if (fs.existsSync(readmePath)) {
-    const content = fs.readFileSync(readmePath, "utf-8");
-    const depMatch = content.match(
-      /##\s*(?:Dependencies|Required Packages|Installation)([\s\S]*?)(?=##|$)/i
-    );
-    return depMatch ? depMatch[1].trim() : null;
-  }
-  return null;
-}
-
 async function pickSource(tempDir) {
   const options = [path.join(tempDir, "src"), tempDir];
   for (const p of options) {
@@ -105,13 +93,12 @@ async function installComponent(repo, targetDir, mode) {
   try {
     await cloneToTemp(repo, tempDir);
     const sourceDir = await pickSource(tempDir);
-    const deps = await extractDependencies(sourceDir);
     if (mode === "overwrite") await fsExtra.emptyDir(targetDir);
     await fsExtra.copy(sourceDir, targetDir, { overwrite: mode !== "merge" });
     const gitDir = path.join(targetDir, ".git");
     if (await fsExtra.pathExists(gitDir)) await fsExtra.remove(gitDir);
     setTimeout(() => fsExtra.remove(tempDir).catch(() => {}), 500);
-    return deps;
+    return true;
   } catch (e) {
     setTimeout(() => fsExtra.remove(tempDir).catch(() => {}), 500);
     throw e;
@@ -130,7 +117,7 @@ async function installFlow(key, repo) {
     spinner: "binary",
   }).start();
   try {
-    const dependencies = await installComponent(repo, targetDir, action);
+    await installComponent(repo, targetDir, action);
     spinner.stop();
 
     const rainbow = chalkAnimation.rainbow(
@@ -138,31 +125,36 @@ async function installFlow(key, repo) {
     );
 
     setTimeout(() => {
-      rainbow.replace("");
       rainbow.stop();
-
       process.stdout.write("\n");
 
-      let content = `${chalk.bold.green("SUCCESS")} • ${chalk.white(
-        "Saved to path:"
-      )}\n`;
-      content += `${chalk.cyan(`./src/components/${key}Components`)}\n`;
-      if (dependencies) {
-        content += `\n${chalk.bold.yellow(
-          "REQUIRED DEPENDENCIES:"
-        )}\n${chalk.dim(dependencies)}\n`;
-      }
-      content += `\n${chalk.bold.magenta("NEXT STEPS:")}\n`;
-      content += `${chalk.white("1. Check & install dependencies above")}\n`;
-      content += `${chalk.white("2. Import component into your project")}`;
+      const content = `
+${chalk.bold.green("🚀  MISSION ACCOMPLISHED!")}
+
+${chalk.white("Your premium component has been successfully injected at:")}
+${chalk.underline.cyan(`./src/components/${key}Components`)}
+
+${chalk.bold.yellow("🔥  CRITICAL NEXT STEP:")}
+${chalk.white("Open the")} ${chalk.bold.magenta("README.md")} ${chalk.white(
+        "inside your new component folder."
+      )}
+${chalk.white(
+  "It contains the specific dependencies you must download to run."
+)}
+
+${chalk.bgBlue.black.bold(" PRODUCTION READY ")}
+${chalk.italic.white("Read the README further for expert tips on making your")}
+${chalk.italic.white("newly installed component fully production ready.")}
+      `.trim();
 
       console.log(
         boxen(content, {
           padding: 1,
-          margin: { left: 2 },
-          borderStyle: "round",
-          borderColor: "cyan",
-          dimBorder: true,
+          margin: { top: 1, bottom: 1, left: 2 },
+          borderStyle: "double",
+          borderColor: "magenta",
+          title: chalk.bold(" PUI SUCCESS "),
+          titleAlignment: "center",
         })
       );
     }, 1200);
