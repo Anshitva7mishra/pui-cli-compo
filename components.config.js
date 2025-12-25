@@ -14,17 +14,18 @@ const components = {
   auth: {
     label: "Auth",
     items: {
-      pookie_auth: {
-        key: "pookie_auth",
-        name: "Pookie Auth",
+       Pookie_Auth_Suite: {
+        key: "Pookie_Auth_Suite",
+        name: "Pookie Auth Suite ",
         repo: "https://github.com/Anshitva7mishra/pookie-auth-cl1.git",
-        description: "Cute animated authentication UI",
+        description: "A cute, playful authentication UI with smooth animations.",
       },
-      grad_auth: {
-        key: "grad_auth",
-        name: "Gradient Auth",
-        repo: "https://github.com/Sarthak-Saghal/auth-cl1.git",
-        description: "Modern gradient auth",
+
+      Glassmorphism_Login_UI: {
+        key: "Glassmorphism_Login_UI",
+        name: "Glassmorphism Login UI",
+        repo: "https://github.com/Sarthak-Saghal/auth-CLI_1.git",
+        description: "A beautiful glassmorphism login interface with soft gradients.",
       },
     },
   },
