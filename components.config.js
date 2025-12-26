@@ -14,19 +14,40 @@ const components = {
   auth: {
     label: "Auth",
     items: {
+
        Pookie_Auth_Suite: {
         key: "Pookie_Auth_Suite",
-        name: "Pookie Auth Suite ",
+        name: "Pookie_Auth_Suite ",
         repo: "https://github.com/Anshitva7mishra/pookie-auth-cl1.git",
         description: "A cute, playful authentication UI with smooth animations.",
       },
 
       Glassmorphism_Login_UI: {
         key: "Glassmorphism_Login_UI",
-        name: "Glassmorphism Login UI",
+        name: "Glassmorphism_Login_UI",
         repo: "https://github.com/Sarthak-Saghal/auth-CLI_1.git",
         description: "A beautiful glassmorphism login interface with soft gradients.",
       },
+          
+      Multi_Step_Signup_UI: {
+      key: "Multi_Step_Signup_UI",
+      name: "Multi_Step_Signup_UI",
+      repo: "https://github.com/Sarthak-Saghal/auth-CLI_2.git",
+      description: "A clean and modern multi-step signup interface.",
+      },
+
+        Neon_Diamond_Login_UI: {
+        key: "Neon_Diamond_Login_UI",
+        name: "Neon_Diamond_Login_UI",
+        repo: "https://github.com/Sarthak-Saghal/auth-CLI_3.git",
+        description: "A futuristic neon-themed login UI with animated diamond layers.",
+      },
+
+
+
+
+
+
     },
   },
 };
