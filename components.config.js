@@ -8,6 +8,30 @@ const components = {
         repo: "https://github.com/Anshitva7mishra/Appointment_Form_PUI_CLI.git",
         description: "Modern Dark-Themed PUI Appointment Form",
       },
+      job_Application_Form: {
+        key: "JOB_Application_Form",
+        name: "JOB_Application_Form",
+        repo: "https://github.com/Anshitva7mishra/PUI_JOBApplicationForm_CLI.git",
+        description: "Modern PUI Job_Application Form",
+      },
+      volunteer_Application_Form: {
+        key: "Volunteer_Application_Form",
+        name: "Volunteer_Application_Form",
+        repo: "https://github.com/Anshitva7mishra/PUI_Volunteer_ApplicationForm_CLI.git",
+        description: "Modern PUI volunteer Application Form",
+      },
+      event_Regestration_Form: {
+        key: "Event_Registration_Form",
+        name: "Event_Regestration_Form",
+        repo: "https://github.com/Anshitva7mishra/PUI_EventRegestrationForm_CLI.git",
+        description: "Modern PUI Event Registration Form",
+      },
+      Sports_tshirt_Order: {
+        key: "Sports_tshirt_Order_Form",
+        name: "Sports_tshirt_Order_Form",
+        repo: "https://github.com/Anshitva7mishra/PUI_SportsTshirt_CLI.git",
+        description: "Modern PUI tshirt ordering Form",
+      },
     },
   },
   navbar: {
@@ -49,8 +73,7 @@ const components = {
   auth: {
     label: "Auth",
     items: {
-
-       Pookie_Auth_Suite: {
+      Pookie_Auth_Suite: {
         key: "Pookie_Auth_Suite",
         name: "Pookie_Auth_Suite ",
         repo: "https://github.com/Anshitva7mishra/pookie-auth-cl1.git",
@@ -65,26 +88,21 @@ const components = {
         description:
           "A beautiful glassmorphism login interface with soft gradients.",
       },
-          
+
       Multi_Step_Signup_UI: {
-      key: "Multi_Step_Signup_UI",
-      name: "Multi_Step_Signup_UI",
-      repo: "https://github.com/Sarthak-Saghal/auth-CLI_2.git",
-      description: "A clean and modern multi-step signup interface.",
+        key: "Multi_Step_Signup_UI",
+        name: "Multi_Step_Signup_UI",
+        repo: "https://github.com/Sarthak-Saghal/auth-CLI_2.git",
+        description: "A clean and modern multi-step signup interface.",
       },
 
-        Neon_Diamond_Login_UI: {
+      Neon_Diamond_Login_UI: {
         key: "Neon_Diamond_Login_UI",
         name: "Neon_Diamond_Login_UI",
         repo: "https://github.com/Sarthak-Saghal/auth-CLI_3.git",
-        description: "A futuristic neon-themed login UI with animated diamond layers.",
+        description:
+          "A futuristic neon-themed login UI with animated diamond layers.",
       },
-
-
-
-
-
-
     },
   },
 };
