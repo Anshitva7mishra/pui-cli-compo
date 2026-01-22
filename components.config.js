@@ -73,13 +73,66 @@ const components = {
   auth: {
     label: "Auth",
     items: {
+
+      DarkWave_Access_Portal: {
+        key: "DarkWave_Access_Portal",
+        name: "DarkWave_Access_Portal",
+        repo: "https://github.com/Sarthak-Saghal/auth-CLI_A_1",
+        description:
+          "A cute, playful authentication UI with smooth animations.",
+      },
+
+      CyberShield_Admin_Auth: {
+        key: "CyberShield_Admin_Auth",
+        name: "CyberShield_Admin_Auth",
+        repo: "https://github.com/Sarthak-Saghal/auth-CLI_A_2",
+        description:
+          "Secure administrator access with enterprise-grade protection",
+      },
+
+
+
       Pookie_Auth_Suite: {
         key: "Pookie_Auth_Suite",
-        name: "Pookie_Auth_Suite ",
+        name: "Pookie_Auth_Suite",
         repo: "https://github.com/Anshitva7mishra/pookie-auth-cl1.git",
         description:
           "A cute, playful authentication UI with smooth animations.",
       },
+
+
+      Social_Login_FlipCoin: {
+        key: "Social_Login_FlipCoin",
+        name: "Social_Login_FlipCoin",
+        repo: "https://github.com/Sarthak-Saghal/auth-CLI_A_3",
+        description:
+          "A cute, playful authentication UI with smooth animations.",
+      },
+
+      Social_Continue_Form: {
+        key: "Social_Continue_Form",
+        name: "Social_Continue_Form",
+        repo: "https://github.com/Sarthak-Saghal/auth-CLI_A_4",
+        description:
+          "A cute, playful authentication UI with smooth animations.",
+      },
+
+       Sleek_SignIn_SignUp: {
+        key: "Sleek_SignIn_SignUp",
+        name: "Sleek_SignIn_SignUp",
+        repo: "https://github.com/Sarthak-Saghal/auth-CLI_A_6",
+        description:
+          "A cute, playful authentication UI with smooth animations.",
+      },
+
+      Auth_Slider: {
+        key: "Auth_Slider",
+        name: "Auth_Slider",
+        repo: "https://github.com/Sarthak-Saghal/auth-CLI_A_5",
+        description:
+          "A cute, playful authentication UI with smooth animations.",
+      },
+
 
       Glassmorphism_Login_UI: {
         key: "Glassmorphism_Login_UI",
